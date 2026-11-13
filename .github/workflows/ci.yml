@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: make test
+      - run: make demo
+
+  # Compares bucketgap with real Prometheus 3 and 2 servers.
+  prometheus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: Download Prometheus 3.16.0 and 2.55.1
+        run: |
+          mkdir -p "$RUNNER_TEMP/prom"
+          cd "$RUNNER_TEMP/prom"
+          curl -fsSLO https://github.com/prometheus/prometheus/releases/download/v3.16.0/prometheus-3.16.0.linux-amd64.tar.gz
+          curl -fsSLO https://github.com/prometheus/prometheus/releases/download/v2.55.1/prometheus-2.55.1.linux-amd64.tar.gz
+          echo "68727009472a2c02e1ff7f062fd5b3e637285bffc8fc2d340c76fb449d6e0f34  prometheus-3.16.0.linux-amd64.tar.gz" | sha256sum -c -
+          echo "19700bdd42ec31ee162e4079ebda4cd0a44432df4daa637141bdbea4b1cd8927  prometheus-2.55.1.linux-amd64.tar.gz" | sha256sum -c -
+          tar xzf prometheus-3.16.0.linux-amd64.tar.gz
+          tar xzf prometheus-2.55.1.linux-amd64.tar.gz
+      - name: Run the comparison
+        run: |
+          export BUCKETGAP_PROMETHEUS="$RUNNER_TEMP/prom/prometheus-3.16.0.linux-amd64/prometheus:$RUNNER_TEMP/prom/prometheus-2.55.1.linux-amd64/prometheus"
+          go test ./tests -run TestAgainstPrometheus -v
+
+  vuln:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - run: npm install --global @anthropic-ai/claude-code@2.1.314
+      - run: make lint

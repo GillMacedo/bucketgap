@@ -1,0 +1,13 @@
+{
+  "name": "bucketgap",
+  "version": "0.1.0",
+  "description": "Find Prometheus alert rules, recording rules and Grafana queries whose le or quantile selectors match nothing: buckets the histogram doesn't have, le=\"1\" after Prometheus 3 stores 1.0, quantiles a summary doesn't export, and _bucket on a summary. Checked against real /metrics output.",
+  "author": {
+    "name": "Giulliano Macedo",
+    "url": "https://github.com/GillMacedo"
+  },
+  "homepage": "https://github.com/GillMacedo/bucketgap",
+  "repository": "https://github.com/GillMacedo/bucketgap",
+  "license": "MIT",
+  "keywords": ["prometheus", "promql", "histogram", "slo", "alerting", "grafana", "prometheus-3", "observability", "go"]
+}

@@ -1,0 +1,26 @@
+groups:
+  - name: checkout
+    rules:
+      # SLO: 95% of checkout requests finish within 250 ms.
+      - alert: CheckoutSlowRequests
+        expr: |
+          sum(rate(checkout_request_duration_seconds_bucket{le="0.25"}[5m]))
+            / sum(rate(checkout_request_duration_seconds_count[5m])) < 0.95
+        for: 10m
+        labels:
+          severity: page
+      - record: checkout:requests_under_1s:ratio_rate5m
+        expr: |
+          sum(rate(checkout_request_duration_seconds_bucket{le="1.0"}[5m]))
+            / sum(rate(checkout_request_duration_seconds_count[5m]))
+      - record: checkout:requests_under_500ms:ratio_rate5m
+        expr: |
+          sum(rate(checkout_request_duration_seconds_bucket{le="0.5"}[5m]))
+            / sum(rate(checkout_request_duration_seconds_count[5m]))
+      - alert: CheckoutQueueWaitHigh
+        expr: checkout_queue_wait_seconds{quantile="0.99"} > 0.1
+        for: 5m
+        labels:
+          severity: ticket
+      - record: checkout:requests_fast:rate5m
+        expr: sum(rate(checkout_request_duration_seconds_bucket{le=~"0.1|0.25"}[5m]))

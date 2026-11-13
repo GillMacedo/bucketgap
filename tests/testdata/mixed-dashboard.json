@@ -1,0 +1,7 @@
+{"panels":[
+ {"type":"logs","title":"Errors","datasource":{"type":"loki","uid":"l"},"targets":[{"refId":"A","expr":"{app=\"checkout\"} |= \"error\""}]},
+ {"type":"timeseries","title":"Mixed","datasource":{"type":"datasource","uid":"-- Mixed --"},"targets":[
+   {"refId":"A","datasource":{"type":"loki","uid":"l"},"expr":"sum(rate({app=\"checkout\"}[5m]))"},
+   {"refId":"B","datasource":{"type":"prometheus","uid":"p"},"expr":"sum(rate(checkout_request_duration_seconds_bucket{le=\"0.3\"}[5m]))"}]},
+ {"type":"timeseries","title":"Var","datasource":{"type":"prometheus","uid":"${ds}"},"targets":[{"refId":"A","expr":"checkout_request_duration_seconds_bucket{le=\"0.5\"}"}]}
+]}

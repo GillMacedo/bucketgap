@@ -1,0 +1,25 @@
+{
+  "title": "Checkout",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Requests under 5 s",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (route) (rate(checkout_request_duration_seconds_bucket{le=\"5\"}[$__rate_interval])) / sum by (route) (rate(checkout_request_duration_seconds_count[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p90",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.9, sum by (le) (rate(checkout_request_duration_seconds_bucket{route=~\"$route\"}[$__rate_interval])))"
+        }
+      ]
+    }
+  ]
+}

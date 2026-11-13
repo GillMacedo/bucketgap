@@ -1,0 +1,14 @@
+{
+  "name": "bucketgap-marketplace",
+  "description": "Marketplace for bucketgap, which checks the le and quantile values in Prometheus rules and Grafana dashboards against real /metrics output.",
+  "owner": {
+    "name": "Giulliano Macedo"
+  },
+  "plugins": [
+    {
+      "name": "bucketgap",
+      "source": "./plugin",
+      "description": "Find alert rules, recording rules and dashboard queries whose le or quantile selectors match no series, so the alert never fires."
+    }
+  ]
+}
